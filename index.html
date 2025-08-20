@@ -28,21 +28,25 @@
             --shadow-neon: 0 0 20px rgba(0, 212, 255, 0.3);
         }
 
+        * {
+            cursor: none;
+        }
+        
         .cursor {
             position: fixed;
             top: 0;
             left: 0;
             width: 20px;
             height: 20px;
-            background: radial-gradient(circle, var(--accent-neon) 0%, transparent 70%);
+            background: radial-gradient(circle, var(--accent-neon) 0%, rgba(0, 212, 255, 0.8) 40%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 10000;
-            transition: transform 0.1s ease;
             mix-blend-mode: difference;
-            display: none;
+            display: block; /* Change from display: none to display: block */
+            will-change: transform; /* GPU acceleration hint */
         }
-
+        
         .cursor::before {
             content: '';
             position: absolute;
@@ -50,10 +54,35 @@
             left: -10px;
             width: 40px;
             height: 40px;
-            border: 1px solid var(--accent-neon);
+            border: 2px solid var(--accent-neon);
             border-radius: 50%;
-            opacity: 0.3;
+            opacity: 0.4;
             animation: cursorPulse 2s infinite;
+        }
+        
+        .cursor.hover-link {
+            transform: scale(1.5);
+            filter: hue-rotate(270deg);
+        }
+        
+        .cursor.hover-button {
+            transform: scale(1.8);
+            filter: hue-rotate(45deg);
+        }
+        
+        .cursor.hover-card {
+            transform: scale(1.3);
+            filter: hue-rotate(180deg);
+        }
+        
+        @media (max-width: 768px) {
+            * {
+                cursor: auto;
+            }
+            
+            .cursor {
+                display: none;
+            }
         }
 
         @keyframes cursorPulse {
@@ -1092,6 +1121,29 @@
             }
         `;
         document.head.appendChild(style);
+
+        const cursor = document.querySelector('.cursor');
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.transform = `translate3d(${e.clientX - 10}px, ${e.clientY - 10}px, 0)`;
+        }, { passive: true });
+
+        document.addEventListener('mouseover', (e) => {
+            const target = e.target;
+            
+            if (target.matches('a:not(.cta-matrix)')) {
+                cursor.className = 'cursor hover-link';
+            } else if (target.matches('.cta-matrix, button')) {
+                cursor.className = 'cursor hover-button';
+            } else if (target.matches('.terminal-window, .skill-panel, .matrix-card, .contact-node')) {
+                cursor.className = 'cursor hover-card';
+            } else {
+                cursor.className = 'cursor';
+            }
+        }, { passive: true });
+        
+        document.addEventListener('mouseleave', () => cursor.style.opacity = '0', { passive: true });
+        document.addEventListener('mouseenter', () => cursor.style.opacity = '1', { passive: true });
     </script>
 </body>
 </html>
